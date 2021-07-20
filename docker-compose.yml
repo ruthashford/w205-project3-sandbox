@@ -43,11 +43,7 @@ services:
   spark:
     image: midsw205/spark-python:0.0.5
     stdin_open: true
-    tty: true
-    expose:
-      - "8888"
-    ports:
-      - "8888:8888"
+    tty: true   
     volumes:
       - "~/w205:/w205"
     command: bash
@@ -55,6 +51,12 @@ services:
       - cloudera
     environment:
       HADOOP_NAMENODE: cloudera
+    expose:
+      - "8888"
+      - "7000" #jupyter notebook      
+    ports:
+      - "8888:8888"
+      - "7000:7000" # map instance:service port   
     extra_hosts:
       - "moby:127.0.0.1"
 
