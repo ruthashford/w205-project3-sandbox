@@ -27,24 +27,67 @@ def purchase_a_sword(color, quantity):
     return "Sword Purchased!\n"
 
 
-# Function to purchase a horse with breed, size, and speed parameters. Post request.
-@app.route("/purchase_a_horse/<breed>/<size>/<speed>", methods=["POST"])
-def purchase_a_horse(breed, size, speed):
+
+# Function to purchase a horse
+@app.route("/purchase_a_horse/<speed>/<size>/<quantity>", methods=["POST"])
+def purchase_a_horse(speed, size, quantity):
     """
     Inputs:
-    - breed
-    - size
     - speed
+    - size (small, medium, or large)
+    - quantity
     """
     
+    # collect user inputs
     purchase_horse_event = {
         "event_type": "purchase_horse", 
-        "breed": breed, 
+        "speed": speed, 
         "size": size, 
-        "speed": speed}
+        "quantity": quantity}
     
-    log_to_kafka("events", purchase_horse_event)
-    return "Horse Purchased!\n"
+    # error handling
+    if purchase_horse_event['size'].lower() not in ['small', 'medium', 'large']:
+        raise Exception("Please enter either 'small', 'medium' or 'large' for horse size")
+        
+    elif float(purchase_horse_event['speed']) < 0:
+        raise Exception("Please enter a non-negative value for speed")
+        
+    elif float(purchase_horse_event['quantity']) < 0:
+        raise Exception("Please enter a non-negative value for quantity")
+        
+    else:
+        # clean inputs to collect only lower case values for consistency
+        purchase_horse_event['size'] = purchase_horse_event['size'].lower()
+        
+        # log event to kafka
+        log_to_kafka("events", purchase_horse_event)
+        return "Horse Purchased!\n"
 
 
 
+# Function to join guild
+@app.route("/guild/<action>", methods=["POST"])
+def guild(action):
+    """
+    Inputs:
+    - action (join, leave)
+    """
+    
+    guild_event = {
+        "event_type": "guild", 
+        "action": action}
+    
+    # clean inputs to collect only lower case values for consistency
+    guild_event['action'] = guild_event['action'].lower()
+    
+    # error handling
+    if guild_event['action'] not in ['join', 'leave']:
+        raise Exception("Available actions are 'join' or 'leave'")
+    
+    else:
+        log_to_kafka("events", guild_event)
+    
+        if guild_event['action'] == "join":
+            return "You joined the guild!\n"
+        else:
+            return "You left the guild!\n"
