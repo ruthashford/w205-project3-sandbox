@@ -17,18 +17,18 @@ def purchase_horse_event_schema():
     |-- User-Agent: string (nullable = true)
     |-- event_type: string (nullable = true)
     |-- timestamp: string (nullable = true)
-    |-- breed: string (nullable = true)
-    |-- size: string (nullable = true)
     |-- speed: string (nullable = true)
+    |-- size: string (nullable = true)
+    |-- quantity: string (nullable = true)
     """
     return StructType([
         StructField("Accept", StringType(), True),
         StructField("Host", StringType(), True),
         StructField("User-Agent", StringType(), True),
         StructField("event_type", StringType(), True),
-        StructField("breed", StringType(), True),
-        StructField("size", StringType(), True),
         StructField("speed", StringType(), True),
+        StructField("size", StringType(), True),
+        StructField("quantity", StringType(), True),
     ])
 
 
@@ -70,13 +70,6 @@ def main():
     horse_purchases.show()
     horse_purchases.write.mode("overwrite")\
         .parquet("/tmp/horse_purchases")
-
-    #query = horse_purchases \
-    #    .writeStream \
-    #    .format("console") \
-    #    .start()
-
-    #query.awaitTermination()
 
 
 if __name__ == "__main__":
