@@ -1,6 +1,16 @@
 # W205 Project 3
 
-## Running the project
+## Overview & Problem Statement
+
+## Goals
+With the tables we produce from this project, we want to be able to answer the following questions for the business:  
+1. How many people are in the guild? 
+2. How many people joined the guild over X time period? 
+3. How many small, medium and large horses have been purchased? 
+4. How many swords have been purchased by color?
+5. How many swords were purchased over X time period? 
+ 
+## Running the Project
 
 Bring up docker
 ```
@@ -61,4 +71,63 @@ docker-compose exec cloudera hadoop fs -ls /tmp/guild_actions
 Bring up spark notebook (note that you need to have configured this first for your instance following the instructions from Shiraz):
 ```
 docker-compose exec spark env PYSPARK_DRIVER_PYTHON=jupyter PYSPARK_DRIVER_PYTHON_OPTS='notebook --no-browser --port 7000 --ip 0.0.0.0 --allow-root --notebook-dir=/w205/' pyspark
+```
+
+## Output 
+*Add ERD diagram here**
+
+### Example Queries 
+
+Guild Stats - How many people are in the guild? 
+```{sql}
+WITH
+  guild_headcount AS (
+    SELECT
+      CASE
+        WHEN action = 'Join' THEN 1
+        WHEN action = 'Leave' THEN - 1
+        ELSE 0
+      END AS guild_hc_change
+    FROM event_guild )
+    
+SELECT
+  SUM(guild_hc_change) AS guild_size
+FROM guild_headcount; 
+```
+
+Guild Stats - How many people joined the guild in the past year? 
+```{sql}
+SELECT
+  COUNT(*) AS num_guild_joins
+FROM event_guild
+WHERE
+  action = 'Join'
+  AND timestamp BETWEEN TIMESTAMP_SUB(timestamp, INTERVAL 365 DAY) AND CURRENT_TIMESTAMP();
+```
+
+Horse Stats - How many horses have been purchased by size? 
+```{sql}
+SELECT
+  size AS horse_size,
+  SUM(quantity) AS num_horses
+FROM event_purchase_horse
+GROUP BY 1;
+```
+
+Sword Stats - How many swords have been purchased by color? 
+```{sql}
+SELECT
+  color AS sword_color,
+  SUM(quantity) AS num_swords
+FROM event_purchase_sword
+GROUP BY 1;
+```
+
+Sword Stats - How many swords have been purchased in the past year? 
+```{sql}
+SELECT
+  SUM(quantity) AS num_swords_purchased
+FROM event_purchase_sword
+WHERE
+  timestamp BETWEEN TIMESTAMP_SUB(timestamp, INTERVAL 365 DAY) AND CURRENT_TIMESTAMP();
 ```
