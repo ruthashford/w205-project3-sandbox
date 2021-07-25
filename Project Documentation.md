@@ -5,10 +5,10 @@
 *Here we can list what we're trying to accomplish. This can include what's in scope and out of scope for this project, in addition to the business questions we aim to answer.*
 
 # Step by Step Instructions 
-*List steps that analysts need to do to reproduce results (this can be similar to what's in the course content slide shows). 
+*List steps that analysts need to do to reproduce results (this can be similar to what's in the course content slide shows).*
 
 # Output
-*Add ERD diagram of the tables, and a link to the python notebook.* 
+![ERD](W205%Project%3%ERD.png?raw=true)
 
 ## Example Queries 
 
@@ -43,7 +43,7 @@ Horse Stats - How many horses have been purchased by size?
 ```{sql}
 SELECT
   size AS horse_size,
-  COUNT(*) AS num_horses
+  SUM(quantity) AS num_horses
 FROM event_purchase_horse
 GROUP BY 1;
 ```
@@ -52,7 +52,7 @@ Sword Stats - How many swords have been purchased by color?
 ```{sql}
 SELECT
   color AS sword_color,
-  COUNT(*) AS num_swords
+  SUM(quantity) AS num_swords
 FROM event_purchase_sword
 GROUP BY 1;
 ```
@@ -60,7 +60,7 @@ GROUP BY 1;
 Sword Stats - How many swords have been purchased in the past year? 
 ```{sql}
 SELECT
-  COUNT(*) AS num_swords_purchased
+  SUM(quantity) AS num_swords_purchased
 FROM event_purchase_sword
 WHERE
   timestamp BETWEEN TIMESTAMP_SUB(timestamp, INTERVAL 365 DAY) AND CURRENT_TIMESTAMP();
