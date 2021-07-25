@@ -75,7 +75,7 @@ docker-compose exec spark env PYSPARK_DRIVER_PYTHON=jupyter PYSPARK_DRIVER_PYTHO
 
 ## Output 
 
-![](W205 Project 3 ERD.png)
+![ERD Diagram](https://github.com/ruthashford/w205-project3-sandbox/blob/main/W205%20Project%203%20ERD.png)
 
 ### Example Queries 
 
