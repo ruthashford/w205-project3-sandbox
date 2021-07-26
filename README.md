@@ -27,23 +27,19 @@ Run the flask app
 docker-compose exec mids env FLASK_APP=/w205/w205-project3-sandbox/game_api.py flask run --host 0.0.0.0
 ```
 
-Use Apache Bench to send some events in bulk:
-
-First to the default endpoint
-```
-docker-compose exec mids ab -n 5 -H "Host: user1.comcast.com" http://localhost:5000/
+Use the [generate_data.sh file](https://github.com/ruthashford/w205-project3-sandbox/blob/main/generate_data.sh) to send standardized events in bulk via Apache Bench: 
 
 ```
-
-Then to the purchase_sword endpoint
-```
-docker-compose exec mids ab -n 5 -m POST -H "Host: user1.comcast.com" http://localhost:5000/purchase_a_sword/red/2
+sh generate_data.sh
 ```
 
-Then the horse and guild endpoints
+*See below for preview of the generate_data.sh file:*
 ```
-docker-compose exec mids ab -n 10 -m POST -H "Host: user1.comcast.com" http://localhost:5000/purchase_a_horse/1/small/1
-docker-compose exec mids ab -n 20 -m POST -H "Host: user1.comcast.com" http://localhost:5000/guild/join
+...
+docker-compose exec mids ab -n 100 -m POST -H "Host: user1.comcast.com" http://localhost:5000/purchase_a_sword/red/2
+docker-compose exec mids ab -n 100 -m POST -H "Host: user2.comcast.com" http://localhost:5000/purchase_a_sword/red/3
+docker-compose exec mids ab -n 500 -m POST -H "Host: user3.comcast.com" http://localhost:5000/purchase_a_sword/red/1
+...
 ```
 
 Check out the events in Kafka
