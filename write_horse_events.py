@@ -51,12 +51,10 @@ def main():
         .getOrCreate()
 
     raw_events = spark \
-        .read \
+        .readStream \
         .format("kafka") \
         .option("kafka.bootstrap.servers", "kafka:29092") \
         .option("subscribe", "events") \
-        .option("startingOffsets", "earliest") \
-        .option("endingOffsets", "latest") \
         .load()
 
     horse_purchases = raw_events \
@@ -67,9 +65,15 @@ def main():
                           purchase_horse_event_schema()).alias('json')) \
         .select('raw_event', 'timestamp', 'json.*')
     
-    horse_purchases.show()
-    horse_purchases.write.mode("overwrite")\
-        .parquet("/tmp/horse_purchases")
+    sink = horse_purchases \
+        .writeStream \
+        .format("parquet") \
+        .option("checkpointLocation", "/tmp/checkpoints_for_horse_purchases") \
+        .option("path", "/tmp/horse_purchases") \
+        .trigger(processingTime="10 seconds") \
+        .start()  
+        
+    sink.awaitTermination()
 
 
 if __name__ == "__main__":
