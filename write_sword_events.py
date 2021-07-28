@@ -48,12 +48,10 @@ def main():
         .getOrCreate()
 
     raw_events = spark \
-        .read \
+        .readStream \
         .format("kafka") \
         .option("kafka.bootstrap.servers", "kafka:29092") \
         .option("subscribe", "events") \
-        .option("startingOffsets", "earliest") \
-        .option("endingOffsets", "latest") \
         .load()
 
     sword_purchases = raw_events \
@@ -64,11 +62,15 @@ def main():
                           purchase_sword_event_schema()).alias('json')) \
         .select('raw_event', 'timestamp', 'json.*')
        
-    sword_purchases.show()
-    sword_purchases \
-        .write \
-        .mode("overwrite") \
-        .parquet("/tmp/sword_purchases")
+    sink = sword_purchases \
+        .writeStream \
+        .format("parquet") \
+        .option("checkpointLocation", "/tmp/checkpoints_for_sword_purchases") \
+        .option("path", "/tmp/sword_purchases") \
+        .trigger(processingTime="10 seconds") \
+        .start()
+        
+    sink.awaitTermination()
 
 if __name__ == "__main__":
     main()

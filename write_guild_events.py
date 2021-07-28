@@ -47,12 +47,10 @@ def main():
         .getOrCreate()
 
     raw_events = spark \
-        .read \
+        .readStream \
         .format("kafka") \
         .option("kafka.bootstrap.servers", "kafka:29092") \
         .option("subscribe", "events") \
-        .option("startingOffsets", "earliest") \
-        .option("endingOffsets", "latest") \
         .load()
 
     guild_actions = raw_events \
@@ -63,9 +61,15 @@ def main():
                           guild_event_schema()).alias('json')) \
         .select('raw_event', 'timestamp', 'json.*')
     
-    guild_actions.show()
-    guild_actions.write.mode("overwrite")\
-        .parquet("/tmp/guild_actions")
+    sink = guild_actions \
+        .writeStream \
+        .format("parquet") \
+        .option("checkpointLocation", "/tmp/checkpoints_for_guild_actions") \
+        .option("path", "/tmp/guild_actions") \
+        .trigger(processingTime="10 seconds") \
+        .start()  
+        
+    sink.awaitTermination()
     
 
 if __name__ == "__main__":
