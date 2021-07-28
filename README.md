@@ -128,3 +128,83 @@ FROM event_purchase_sword
 WHERE
   timestamp BETWEEN TIMESTAMP_SUB(timestamp, INTERVAL 365 DAY) AND CURRENT_TIMESTAMP();
 ```
+
+# Alternative Approach
+
+Alternatively to running Pyspark in a Jupyter notebook. We can run it straight from the command line.
+
+Steps:
+
+```python
+# start up pyspark
+docker-compose exec spark pyspark
+
+# read in the data
+swords = spark.read.parquet('/tmp/sword_purchases')
+
+# write to a temp table to read from presto
+swords.registerTempTable("sword_purchases")
+query = """
+create external table sword_purchases
+  stored as parquet
+  location '/tmp/sword_purchases_presto'
+  as
+  select * from sword_purchases
+"""
+spark.sql(query)
+
+
+# do the same for horse and guild tables
+
+# horses
+horses = spark.read.parquet('/tmp/horse_purchases')
+horses.registerTempTable("horse_purchases")
+query = """
+create external table horse_purchases
+  stored as parquet
+  location '/tmp/horse_purchases_presto'
+  as
+  select * from horse_purchases
+"""
+spark.sql(query)
+
+# guilds
+guilds = spark.read.parquet('/tmp/guild_actions')
+guilds.registerTempTable("guild_actions")
+query = """
+create external table guild_actions
+  stored as parquet
+  location '/tmp/guild_actions_presto'
+  as
+  select * from guild_actions
+"""
+spark.sql(query)
+```
+
+Start up Presto
+
+```bash
+docker-compose exec presto presto --server presto:8080 --catalog hive --schema default
+```
+
+See our tables
+
+```bash
+show tables;
+
+# output
+      Table      
+-----------------
+ guild_actions   
+ horse_purchases 
+ sword_purchases 
+(3 rows)
+```
+
+Run queries
+
+```sql
+SELECT * FROM horse_purchases;
+```
+
+Problem: we still have the long json string listed in the "raw_event" field. Will need to unravel this json structure in pyspark first. 
