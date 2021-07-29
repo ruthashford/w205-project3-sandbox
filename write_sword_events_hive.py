@@ -72,9 +72,9 @@ def main():
     extracted_sword_events.registerTempTable("extracted_sword_events")
 
     spark.sql("""
-        create external table if not exists sword_events1
+        create external table if not exists sword_events
         stored as parquet
-        location '/tmp/sword_events1'
+        location '/tmp/sword_events'
         as
         select * from extracted_sword_events
     """)    
