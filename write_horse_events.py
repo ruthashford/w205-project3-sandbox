@@ -48,7 +48,25 @@ def main():
     spark = SparkSession \
         .builder \
         .appName("ExtractEventsJob") \
+        .enableHiveSupport() \
         .getOrCreate()
+    
+    # Create a hive table
+    spark.sql("""
+        create external table if not exists default.horse_purchases (
+            raw_event string,
+            timestamp string,
+            Accept string,
+            Host string,
+            User_Agent string,
+            event_type string,
+            speed string,
+            size string,
+            quantity string
+          )
+          stored as parquet 
+          location '/tmp/horse_purchases'
+    """)      
 
     raw_events = spark \
         .readStream \

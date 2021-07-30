@@ -45,7 +45,25 @@ def main():
     spark = SparkSession \
         .builder \
         .appName("ExtractEventsJob") \
+        .enableHiveSupport() \
         .getOrCreate()
+    
+    
+    # Create a hive table
+    spark.sql("""
+        create external table if not exists default.sword_purchases (
+            raw_event string,
+            timestamp string,
+            Accept string,
+            Host string,
+            User_Agent string,
+            event_type string,
+            color string,
+            quantity string
+          )
+          stored as parquet 
+          location '/tmp/sword_purchases'
+    """)        
 
     raw_events = spark \
         .readStream \
@@ -59,9 +77,9 @@ def main():
         .select(raw_events.value.cast('string').alias('raw_event'),
                 raw_events.timestamp.cast('string'),
                 from_json(raw_events.value.cast('string'),
-                          purchase_sword_event_schema()).alias('json')) \
+                     purchase_sword_event_schema()).alias('json')) \
         .select('raw_event', 'timestamp', 'json.*')
-       
+            
     sink = sword_purchases \
         .writeStream \
         .format("parquet") \
