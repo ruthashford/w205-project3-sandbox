@@ -44,8 +44,24 @@ def main():
     spark = SparkSession \
         .builder \
         .appName("ExtractEventsJob") \
+        .enableHiveSupport() \
         .getOrCreate()
 
+    # Create a hive table
+    spark.sql("""
+        create external table if not exists default.guild_actions (
+            raw_event string,
+            timestamp string,
+            Accept string,
+            Host string,
+            User_Agent string,
+            event_type string,
+            action string
+          )
+          stored as parquet 
+          location '/tmp/guild_actions'
+    """)   
+    
     raw_events = spark \
         .readStream \
         .format("kafka") \
