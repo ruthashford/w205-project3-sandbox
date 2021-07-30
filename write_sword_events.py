@@ -12,7 +12,7 @@ def purchase_sword_event_schema():
     root
     |-- Accept: string (nullable = true)
     |-- Host: string (nullable = true)
-    |-- User-Agent: string (nullable = true)
+    |-- User_Agent: string (nullable = true)
     |-- event_type: string (nullable = true)
     |-- timestamp: string (nullable = true)
     |-- color: string (nullable = true)
@@ -22,7 +22,7 @@ def purchase_sword_event_schema():
     return StructType([
         StructField("Accept", StringType(), True),
         StructField("Host", StringType(), True),
-        StructField("User-Agent", StringType(), True),
+        StructField("User_Agent", StringType(), True),
         StructField("event_type", StringType(), True),
         StructField("color", StringType(), True),
         StructField("quantity", StringType(), True),
@@ -52,6 +52,8 @@ def main():
     # Create a hive table
     spark.sql("""
         create external table if not exists default.sword_purchases (
+            raw_event string,
+            timestamp string,
             Accept string,
             Host string,
             User_Agent string,
@@ -74,10 +76,10 @@ def main():
         .filter(is_sword_purchase(raw_events.value.cast('string'))) \
         .select(raw_events.value.cast('string').alias('raw_event'),
                 raw_events.timestamp.cast('string'),
-                from_json(raw_events.value.cast('string'),
-                          purchase_sword_event_schema()).alias('json')) \
+                 from_json(raw_events.value.cast('string'),
+                     purchase_sword_event_schema()).alias('json')) \
         .select('raw_event', 'timestamp', 'json.*')
-    
+            
     sink = sword_purchases \
         .writeStream \
         .format("parquet") \
