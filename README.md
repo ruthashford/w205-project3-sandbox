@@ -68,7 +68,6 @@ Bring up spark notebook (note that you need to have configured this first for yo
 ```
 docker-compose exec spark env PYSPARK_DRIVER_PYTHON=jupyter PYSPARK_DRIVER_PYTHON_OPTS='notebook --no-browser --port 7000 --ip 0.0.0.0 --allow-root --notebook-dir=/w205/' pyspark
 ```
-
 ## Output 
 
 ![ERD Diagram](https://github.com/ruthashford/w205-project3-sandbox/blob/main/W205%20Project%203%20ERD.png)
@@ -127,4 +126,66 @@ SELECT
 FROM event_purchase_sword
 WHERE
   timestamp BETWEEN TIMESTAMP_SUB(timestamp, INTERVAL 365 DAY) AND CURRENT_TIMESTAMP();
+```
+
+## Creating External Tables to Query in Presto
+Presto is a query engine that is often used over spark because it scales well, can handle a variety of SQL syntaxes and can be easier to query than doing so in Spark. In order to make your tables available to query in Presto, you need to store your tables in the Hive metastore.
+
+Open pyspark: 
+```
+docker-compose exec spark pyspark
+```
+
+Create external tables for each of the 3 events: 
+```
+df_sword = spark.read.parquet('/tmp/sword_purchases')
+df_sword.registerTempTable(‘sword_purchases’)
+sword_purchases_table = """
+create external table swords_table
+  stored as parquet
+  location '/tmp/swords_table’
+  as
+  select * from sword_purchases
+"""
+spark.sql(sword_purchases_table)
+
+
+df_horse = spark.read.parquet('/tmp/horse_purchases')
+df_horse.registerTempTable(‘horse_purchases’)
+horse_purchases_table = """
+create external table horses_table
+  stored as parquet
+  location '/tmp/horses_table’
+  as
+  select * from horse_purchases
+"""
+spark.sql(horse_purchases_table)
+
+df_guild = spark.read.parquet('/tmp/guild_actions’)
+df_guild.registerTempTable(‘guild_actions’)
+guild_action_table = """
+create external table guild_table
+  stored as parquet
+  location '/tmp/guild_table’
+  as
+  select * from guild_actions
+"""
+spark.sql(guild_action_table)
+```
+
+Exit pyspark and open presto: 
+```
+exit()
+
+docker-compose exec presto presto --server presto:8080 --catalog hive --schema default
+```
+
+Check to see what tables are available in presto: 
+```
+presto:default> show tables;
+```
+
+You can run the example queries included above in presto, here is an example to show the syntax: 
+```
+presto:default> select * from sword_purchases_table;
 ```
