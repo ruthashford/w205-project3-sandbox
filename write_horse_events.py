@@ -14,7 +14,7 @@ def purchase_horse_event_schema():
     root
     |-- Accept: string (nullable = true)
     |-- Host: string (nullable = true)
-    |-- User_Agent: string (nullable = true)
+    |-- User-Agent: string (nullable = true)
     |-- event_type: string (nullable = true)
     |-- timestamp: string (nullable = true)
     |-- speed: string (nullable = true)
@@ -24,7 +24,7 @@ def purchase_horse_event_schema():
     return StructType([
         StructField("Accept", StringType(), True),
         StructField("Host", StringType(), True),
-        StructField("User_Agent", StringType(), True),
+        StructField("User-Agent", StringType(), True),
         StructField("event_type", StringType(), True),
         StructField("speed", StringType(), True),
         StructField("size", StringType(), True),
