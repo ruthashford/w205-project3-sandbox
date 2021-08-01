@@ -58,7 +58,6 @@ services:
       - "8888"
       - "7000" #jupyter notebook      
     ports:
-      #- "8888:8888"
       - "7000:7000" # map instance:service port   
     extra_hosts:
       - "moby:127.0.0.1"
